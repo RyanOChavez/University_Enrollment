@@ -1,0 +1,1902 @@
+// Ryan Chavez 
+// 5/29/23
+// Final Exam Project
+// implmenting the student and course options to add, edit, or view each student and course.
+// implementing the enrollmet option to add or edit. 
+// implemeting the reports option to view enrollment information
+
+// libaries used 
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.stage.Stage;
+import java.io.IOException;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+
+    public class Main extends Application 
+    {
+      // creating the private label to display the message
+      private Label resultLabel;
+
+
+        public static void main(String[] args) 
+        {
+
+            launch(args);
+        }
+
+        @Override
+        public void start(Stage primaryStage) throws IOException
+        {
+
+            // Create the main layout 
+          primaryStage.setTitle("University Enrollment");
+          // Creating file management objects
+          StudentFileManager studentManager = new StudentFileManager();
+          CourseFileManager courseManager = new CourseFileManager();
+           EnrollmentFileManager enrollmentManager = new EnrollmentFileManager();
+
+            BorderPane layout = new BorderPane();
+            MenuBar menuBar = new MenuBar();
+            // Menu Items will be student, courses, and enrollemnt 
+            Menu student = new Menu("Student");
+            Menu courses = new Menu("Courses");
+            Menu enrollment = new Menu("Enrollment");
+            Menu reports = new Menu("Reports");
+            Menu exit = new Menu("Exit");
+            layout.setTop(menuBar);
+            // gathering created menus to the bar 
+            menuBar.getMenus().addAll(student, courses, enrollment, reports, exit);
+
+            MenuItem viewStudent = new MenuItem("View Student");
+            MenuItem addStudent = new MenuItem("Add Student");
+            MenuItem editStudent = new MenuItem("Edit Student");
+
+            student.getItems().addAll(viewStudent, addStudent, editStudent); // when user click on student, it will show view student, add student, and edit student 
+
+          // actions created for when the user selects any of the menu items 
+           // exceptions are thrown when the user selects any of the menu items.
+
+            viewStudent.setOnAction(e -> {
+              try {                     
+              viewStudentPage(layout, studentManager);
+              } catch (IOException e1) {
+                e1.printStackTrace();
+              }
+            });
+
+          addStudent.setOnAction(e ->  {
+            try {
+              addStudentPage(layout, studentManager);
+            } catch (IOException ex) {
+              ex.printStackTrace();
+            }
+          });
+            editStudent.setOnAction(e ->  {
+              try {
+            editStudentPage(layout, studentManager);
+              } catch (IOException e2) {
+                e2.printStackTrace();
+              }
+            });
+
+            MenuItem viewCourse = new MenuItem("View Course");
+            MenuItem addCourse = new MenuItem("Add Course");
+            MenuItem editCourse = new MenuItem("Edit Course");
+            courses.getItems().addAll(viewCourse, addCourse, editCourse);// when user click on courses, it will show view course, add course, and edit course 
+
+           // actions created for when the user selects any of the menu items 
+          // exceptions are thrown when the user selects any of the menu items.
+            viewCourse.setOnAction(e -> {
+              try{
+          viewCoursePage(layout, courseManager);
+              } catch(IOException e3){
+                e3.printStackTrace();
+              }
+            });
+
+            addCourse.setOnAction(e -> {
+              try {
+                addCoursePage(layout, courseManager);
+              } catch (IOException e4) {
+                e4.printStackTrace();
+              }
+            });
+
+            editCourse.setOnAction(e -> {
+              try{
+                editCoursePage(layout, courseManager);
+              } catch (IOException e5) {
+                e5.printStackTrace();
+              }
+            });
+
+            MenuItem addEnrollment = new MenuItem("Add Enrollment");
+            MenuItem editEnrollment = new MenuItem("Edit Enrollment");
+            enrollment.getItems().addAll(addEnrollment, editEnrollment);// when user click on enrollment, it will show view enrollment, add enrollment, and edit enrollment 
+
+           // actions created for when the user selects any of the menu items 
+           // exceptions are thrown when the user selects any of the menu items.
+          addEnrollment.setOnAction(e -> {
+            try {
+              addEnrollmentPage(layout, enrollmentManager, studentManager, courseManager);
+            } catch (IOException e6) {
+              e6.printStackTrace();
+            }
+          });
+          editEnrollment.setOnAction(e -> {
+            try {
+              
+            editEnrollmentPage(layout, enrollmentManager, studentManager, courseManager); } catch (IOException e7) {
+              e7.printStackTrace();
+            }
+          });
+
+          // Whnne the user clicks on reports, View Reports will be displaye
+          MenuItem viewReport = new MenuItem("View Reports");
+          reports.getItems().add(viewReport);
+       
+          viewReport.setOnAction(e -> {
+            try {
+              reportsPage(layout, enrollmentManager, studentManager, courseManager);
+            } catch (IOException e8) {
+              e8.printStackTrace();
+            }
+          });
+          // When teh user clicks on exit, the program will exit 
+          MenuItem exitProgram = new MenuItem("Exit Program");
+          exit.getItems().add(exitProgram);
+
+          exit.setOnAction(e -> exitPage(layout, primaryStage));
+
+            Scene scene = new Scene(layout, 500, 500);
+            primaryStage.setScene(scene);
+            primaryStage.show();
+        }
+
+  private void viewStudentPage(BorderPane layout, StudentFileManager studentManager) throws IOException // this page will only be used to view a student, no edits will be made. Student must have been created to be viewed. 
+  {
+    // layout for viewing the student 
+    Stage stage = new Stage();
+    GridPane gridPane = new GridPane();
+
+    // creating label and text boxes for the user input 
+    Label lblStudentID = new Label("Student ID");
+    Label lblFirstName = new Label("First Name");
+    Label lblLastName = new Label("Last Name");
+    Label lblAddress = new Label("Address");
+    Label lblCity = new Label("City");
+    Label lblState = new Label("State");
+    Label lblZipCode = new Label("Zip Code");
+    TextField txtStudentID = new TextField();
+    TextField txtFirstName = new TextField();           
+    TextField txtLastName = new TextField();
+    TextField txtAddress = new TextField();
+    TextField txtCity = new TextField();
+    TextField txtState = new TextField(); 
+    TextField txtZipCode = new TextField();
+    Button btnSearchStudent = new Button("Search"); // button to search for a student
+    // result label created to display message to the user
+    resultLabel = new Label();
+
+    // adding the labels and text boxes to the grid pane 
+    gridPane.add(lblStudentID, 0, 0);
+    gridPane.add(txtStudentID, 1, 0);
+    gridPane.add(btnSearchStudent, 2, 0);
+    gridPane.add(lblFirstName, 0, 1);
+    gridPane.add(txtFirstName, 1, 1);        
+    gridPane.add(lblLastName, 0, 2);
+    gridPane.add(txtLastName, 1, 2);
+    gridPane.add(lblAddress, 0, 3);
+    gridPane.add(txtAddress, 1, 3);
+    gridPane.add(lblCity, 0, 4);
+    gridPane.add(txtCity, 1, 4);
+    gridPane.add(lblState, 0, 5);
+    gridPane.add(txtState, 1, 5); 
+    gridPane.add(lblZipCode, 0, 6);
+    gridPane.add(txtZipCode, 1, 6);
+    gridPane.add(resultLabel, 1, 7);
+
+    // action button for when the user clicks on the search button
+    btnSearchStudent.setOnAction(e -> {
+      // letting the user enter the student ID
+      String studentID = txtStudentID.getText();
+      Student viewStudent = studentManager.getStudent(studentID); // checking the student id from the file managemnt class
+      if(viewStudent != null) // if the student is found in the class then students info will be displayed 
+      {
+      txtFirstName.setText(viewStudent.getStudentFirstName());
+      txtLastName.setText(viewStudent.getStudentLastName());
+      txtAddress.setText(viewStudent.getStudentAddress());
+      txtCity.setText(viewStudent.getStudentCity());
+      txtState.setText(viewStudent.getStudentState());
+      txtZipCode.setText(viewStudent.getStudentZip());
+      resultLabel.setText("Student Found!"); // result label created to display message to the user
+      }
+        // if not, then the student is not found 
+      else {
+
+        resultLabel.setText("No Student found with ID: " + studentID);
+      }
+    });
+
+    // adding the grid pane to the scene 
+    gridPane.setPadding(new Insets(10));
+    gridPane.setHgap(10);
+    gridPane.setVgap(10);
+    layout.setCenter(gridPane);
+
+  }
+
+      private void addStudentPage(BorderPane layout, StudentFileManager studentManager) throws IOException // this page will be used to only add new students.
+        {
+          // layout for the add student page 
+          Stage stage = new Stage();
+          GridPane gridPane = new GridPane();
+
+          // creating labels and textboxes for the user input 
+          Label lblStudentID = new Label("Student ID");
+          Label lblFirstName = new Label("First Name");
+          Label lblLastName = new Label("Last Name");
+          Label lblAddress = new Label("Address");
+          Label lblCity = new Label("City");
+          Label lblState = new Label("State");
+          Label lblZipCode = new Label("Zip Code");
+          TextField txtStudentID = new TextField();
+          TextField txtFirstName = new TextField();           
+          TextField txtLastName = new TextField();
+          TextField txtAddress = new TextField();
+          TextField txtCity = new TextField();
+          TextField txtZipCode = new TextField();
+          ComboBox<String> comboState = new ComboBox<>(); // creating a combo box for the state 
+
+      // result label created to display message to the user
+         resultLabel = new Label();
+
+          // Creating the combobox items for the user to select
+          comboState.getItems().addAll("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS" , "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NM", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY");
+          comboState.setPromptText("State");
+          Button btnCreateStudent = new Button("Create Student"); // creating button for the user input 
+
+          // adding the labels and textboxes to the grid pane 
+          gridPane.add(lblStudentID, 0, 0);
+          gridPane.add(txtStudentID, 1, 0);
+          gridPane.add(lblFirstName, 0, 1);
+          gridPane.add(txtFirstName, 1, 1);        
+          gridPane.add(lblLastName, 0, 2);
+          gridPane.add(txtLastName, 1, 2);
+          gridPane.add(lblAddress, 0, 3);
+          gridPane.add(txtAddress, 1, 3);
+          gridPane.add(lblCity, 0, 4);
+          gridPane.add(txtCity, 1, 4);
+          gridPane.add(lblState, 0, 5);
+          gridPane.add(comboState, 1, 5); 
+          gridPane.add(lblZipCode, 0, 6);
+          gridPane.add(txtZipCode, 1, 6);
+          gridPane.add(btnCreateStudent, 1, 7);
+          gridPane.add(resultLabel, 1, 8);
+
+          gridPane.setPadding(new Insets(10));
+          gridPane.setHgap(10);
+          gridPane.setVgap(10);
+          layout.setCenter(gridPane);
+
+          // action when the create button is pushed 
+          btnCreateStudent.setOnAction(e -> 
+                                       {
+              // getting info from the user
+              String studentID = txtStudentID.getText();
+              String studentFirstName = txtFirstName.getText();
+               String studentLastName = txtLastName.getText();
+               String studentAddress = txtAddress.getText();
+               String studentCity = txtCity.getText();
+               String studentState = comboState.getValue();
+               String studentZip = txtZipCode.getText();
+            //checking the info entered by the user, if any field is left empty then this message will be displayed.
+              if(studentID.isEmpty() || studentFirstName.isEmpty() || studentLastName.isEmpty() || studentAddress.isEmpty() || studentCity.isEmpty() || studentState.isEmpty() || studentZip.isEmpty())
+              {
+                resultLabel.setText("Error: Please fill out all fields!");
+              }
+              // if the user enters an ID that exist within the studentfile class this messgae will dispaly
+             else if(studentManager.getStudent(studentID) != null)
+             {
+               resultLabel.setText("Error: Student has been created already!");
+             }
+
+            else { // if the parameters are met, then the student will be created 
+            // creating a new student object 
+          Student newStudent = new Student(studentID, studentFirstName, studentLastName, studentAddress, studentCity, studentState, studentZip);
+           //  adding the new student to the student manager 
+          try{
+            studentManager.addStudent(newStudent);
+            resultLabel.setText("Student created successfully!");
+          } catch (IOException ex){
+           ex.printStackTrace();
+            resultLabel.setText("Failed to create student");
+          }
+            }    
+          });
+
+      }
+
+  private void editStudentPage(BorderPane layout, StudentFileManager studentManager) throws IOException // this page will be used to edit a student. Student must have been created to be edited. 
+  {
+    // edit student page layout 
+    Stage stage = new Stage();
+    GridPane gridPane = new GridPane();
+    HBox bttnBox = new HBox(10); // creating the hbox for the buttons 
+
+   // labels and textboxes 
+    Label lblStudentID = new Label("Student ID");
+    Label lblFirstName = new Label("First Name");
+    Label lblLastName = new Label("Last Name");
+    Label lblAddress = new Label("Address");
+    Label lblCity = new Label("City");
+    Label lblState = new Label("State");
+    Label lblZipCode = new Label("Zip Code");
+    TextField txtStudentID = new TextField();
+    TextField txtFirstName = new TextField();           
+    TextField txtLastName = new TextField();
+    TextField txtAddress = new TextField();
+    TextField txtCity = new TextField();
+    TextField txtZipCode = new TextField();
+    ComboBox<String> comboState = new ComboBox<>(); // combox for the state
+    // gathering items for the state
+    comboState.getItems().addAll("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS" , "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NM", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY");
+    comboState.setPromptText("State");
+    // buttons for the user input
+    Button btnSearchStudent = new Button("Search");
+    Button btnResetStudent = new Button("Reset");
+    Button btnUpdateStudent = new Button("Update");
+
+    // creating result label to display message for the user 
+    resultLabel = new Label();
+
+    // adding labels, textbozes, and buttons to the grid pane 
+    gridPane.add(lblStudentID, 0, 0);
+    gridPane.add(txtStudentID, 1, 0);
+    gridPane.add(btnSearchStudent, 2, 0);
+    gridPane.add(lblFirstName, 0, 1);
+    gridPane.add(txtFirstName, 1, 1);        
+    gridPane.add(lblLastName, 0, 2);
+    gridPane.add(txtLastName, 1, 2);
+    gridPane.add(lblAddress, 0, 3);
+    gridPane.add(txtAddress, 1, 3);
+    gridPane.add(lblCity, 0, 4);
+    gridPane.add(txtCity, 1, 4);
+    gridPane.add(lblState, 0, 5);
+    gridPane.add(comboState, 1, 5); 
+    gridPane.add(lblZipCode, 0, 6);
+    gridPane.add(txtZipCode, 1, 6);
+    gridPane.add(resultLabel, 1, 8);
+
+    bttnBox.setAlignment(Pos.CENTER_LEFT);
+    bttnBox.getChildren().addAll(btnResetStudent, btnUpdateStudent);
+
+    // action event for when the user clicks on the search 
+    btnSearchStudent.setOnAction(e -> {
+      String studentID = txtStudentID.getText(); // user enters the student id 
+      Student editStudent = studentManager.getStudent(studentID); // checking the studentfile class to see if the student ID exists
+      if(editStudent != null) // if the student id is found then then students info will be displayed to edit 
+      {
+        // student will be able to update all fields except the id;
+        txtStudentID.setEditable(false);
+      txtFirstName.setText(editStudent.getStudentFirstName());
+      txtLastName.setText(editStudent.getStudentLastName());
+        txtAddress.setText(editStudent.getStudentAddress());
+        txtCity.setText(editStudent.getStudentCity());
+        txtZipCode.setText(editStudent.getStudentZip());
+        comboState.setValue(editStudent.getStudentState());
+        resultLabel.setText("Student Found!");
+
+      }
+      else {
+          resultLabel.setText("ERROR: Student with ID: " + studentID + " not found!");
+      }
+    }
+
+    );
+      // action event for when the user clicks on reset 
+    // when the user licks this button all textfields or comboxes will be cleared 
+      btnResetStudent.setOnAction(e -> {
+      txtFirstName.clear();
+      txtLastName.clear();
+      txtAddress.clear();
+      txtCity.clear();
+      comboState.setValue(null);
+      txtZipCode.clear();
+      resultLabel.setText("Student has been reset. Please enter new information");
+
+    });
+    // action even to update the student 
+    btnUpdateStudent.setOnAction(e -> {
+      // user will get the opportunity to edit all fields of a student except the student id
+     String studentID = txtStudentID.getText();
+     String studentFirstName = txtFirstName.getText();
+     String studentLastName = txtLastName.getText();
+     String studentAddress = txtAddress.getText();
+     String studentCity = txtCity.getText();
+     String studentState = comboState.getValue();
+     String studentZip = txtZipCode.getText();
+    // adding new updated info to both student class and student file class
+    Student newUpdatedStudent = new Student(studentID, studentFirstName, studentLastName, studentAddress, studentCity, studentState, studentZip);
+      try{
+    studentManager.updateStudent(newUpdatedStudent);
+    resultLabel.setText("Student has been updated!");
+      } catch (IOException e2){
+        e2.printStackTrace();
+        resultLabel.setText("Student did not update");
+      }
+
+    });
+
+    // adding to the scene 
+    gridPane.add(bttnBox, 1, 7, 2, 1);
+    gridPane.setPadding(new Insets(10));
+    gridPane.setHgap(10);
+    gridPane.setVgap(10);
+    layout.setCenter(gridPane);
+
+
+  }
+
+  private void viewCoursePage(BorderPane layout, CourseFileManager courseManager) throws IOException //this page will be used to view the couse and search for it using the course ID 
+  {
+    // view course page layout 
+    Stage stage = new Stage();
+    GridPane gridPane = new GridPane();
+
+    // creating the labels and textboxes for the user 
+    Label lblCourseID = new Label("Course ID");
+    Label lblCourseName = new Label("Course Name");
+    Label lblCourseDepartment = new Label("Course Department");
+    Label lblCourseNumber = new Label("Course Number");
+    Label lblInstructorName = new Label("Instructor Name");
+    TextField txtCourseID = new TextField();
+    TextField txtCourseName = new TextField();
+    TextField txtCourseDepartment = new TextField();
+    TextField txtCourseNumber = new TextField();
+    TextField txtInstructorName = new TextField();
+    Button btnSearchCourse = new Button("Search"); // button to search for course 
+    resultLabel = new Label();
+
+    // adding lables, textboxes, and labels to the gridpane 
+    gridPane.add(lblCourseID, 0, 0);
+    gridPane.add(txtCourseID, 1, 0);
+    gridPane.add(btnSearchCourse, 2, 0);
+    gridPane.add(lblCourseName, 0, 1);
+    gridPane.add(txtCourseName, 1, 1);
+    gridPane.add(lblCourseDepartment, 0, 2);
+    gridPane.add(txtCourseDepartment, 1, 2);
+    gridPane.add(lblCourseNumber, 0, 3);
+    gridPane.add(txtCourseNumber, 1, 3);
+    gridPane.add(lblInstructorName, 0,4);
+    gridPane.add(txtInstructorName, 1, 4);
+    gridPane.add(resultLabel, 1, 5);
+
+    // action event for when the user clicks on the search button 
+    btnSearchCourse.setOnAction(e -> {
+      String courseID = txtCourseID.getText(); // user enters course id 
+      Courses viewCourse = courseManager.getCourse(courseID); // the course id will be checked to see if it exists within the course file class 
+      if(viewCourse != null) // if found the course information will be diisplayed 
+      {
+      txtCourseName.setText(viewCourse.getCourseName());      txtCourseDepartment.setText(viewCourse.getCourseDepartment());
+        txtCourseNumber.setText(viewCourse.getCourseNumber());
+    txtInstructorName.setText(viewCourse.getInstructorName());
+      resultLabel.setText("Course Found");
+      }
+      else // if not found this message will be displayed 
+      {
+        resultLabel.setText("No Course found with ID: " + courseID);
+        //resultLabel.setText("Error: Course not Found");
+      }
+    });
+
+    // setting the scene and showing teh stage 
+    gridPane.setPadding(new Insets(10));
+    gridPane.setHgap(10);
+    gridPane.setVgap(10);
+    layout.setCenter(gridPane);
+  }
+
+  private void addCoursePage(BorderPane layout, CourseFileManager courseManager) throws IOException // this page will be used to create the course.
+  {
+    // add course page layout 
+    Stage stage = new Stage();
+    GridPane gridPane = new GridPane();
+
+    // creating the labels and textboxes for the user input
+    Label lblCourseID = new Label("Course ID");
+    Label lblCourseName = new Label("Course Name");
+    Label lblCourseDepartment = new Label("Course Department");
+    Label lblCourseNumber = new Label("Course Number");
+    Label lblInstructorName = new Label("Instructor Name");
+    TextField txtCourseID = new TextField();
+    TextField txtCourseName = new TextField();
+    TextField txtCourseDepartment = new TextField();
+    TextField txtCourseNumber = new TextField();
+    TextField txtInstructorName = new TextField();
+    Button btnCreateCourse = new Button("Create Course"); // button to create the course 
+
+    //result label created to display message to the user 
+    resultLabel = new Label();
+
+    // Adding the labels and textboxes, and buttons for the user input
+    gridPane.add(lblCourseID, 0, 0);
+    gridPane.add(txtCourseID, 1, 0);
+    gridPane.add(lblCourseName, 0, 1);
+    gridPane.add(txtCourseName, 1, 1);
+    gridPane.add(lblCourseDepartment, 0, 2);
+    gridPane.add(txtCourseDepartment, 1, 2);
+    gridPane.add(lblCourseNumber, 0, 3);
+    gridPane.add(txtCourseNumber, 1, 3);
+    gridPane.add(lblInstructorName, 0,4);
+    gridPane.add(txtInstructorName, 1, 4);
+    gridPane.add(btnCreateCourse, 1, 5);
+    gridPane.add(resultLabel, 1, 6);
+
+    // action event for when the student clicks on the create course button
+    btnCreateCourse.setOnAction(e ->
+           {
+          // getting the user information 
+        String courseID = txtCourseID.getText();
+        String courseName = txtCourseName.getText();
+        String courseDepartment = txtCourseDepartment.getText();
+        String courseNumber = txtCourseNumber.getText();
+        String instructorName = txtInstructorName.getText();
+
+             // checking if any fields are left empty 
+             if(courseNumber.isEmpty() && courseName.isEmpty() && courseDepartment.isEmpty() && instructorName.isEmpty())
+             {
+               resultLabel.setText("Error: Please enter all fields!");
+             }
+               // checking if the user has created the course with the same id
+            else if(courseManager.getCourse(courseID) != null)
+               {
+                 resultLabel.setText("Error: Course already Exist!");
+               }
+        // adding the new course to the course file manager
+             else {
+               // creating new course object with teh user input and adding it into the course file manager 
+               Courses newCourse = new Courses(courseID, courseName, courseDepartment, courseNumber, instructorName);
+               try {
+               courseManager.addCourse(newCourse);
+               resultLabel.setText("Course has been created");
+             } catch(IOException et){
+               et.printStackTrace();
+               resultLabel.setText("Course was not created");
+             }
+             }             });
+
+    // creating and shwoing the scene 
+    gridPane.setPadding(new Insets(10));
+    gridPane.setHgap(10);
+    gridPane.setVgap(10);
+    layout.setCenter(gridPane);
+
+  }
+
+  private void editCoursePage(BorderPane layout, CourseFileManager courseManager) throws IOException // this page will be used to edit a course. Only existing courses can be edited. 
+  {
+    //edit course page layout 
+    Stage stage = new Stage();
+    GridPane gridPane = new GridPane();
+    HBox btnBox = new HBox(10);
+
+    // creating the labelsand textboxes for the user input 
+    Label lblCourseID = new Label("Course ID");
+    Label lblCourseName = new Label("Course Name");
+    Label lblCourseDepartment = new Label("Course Department");
+    Label lblCourseNumber = new Label("Course Number");
+    Label lblInstructorName = new Label("Instructor Name");
+    TextField txtCourseID = new TextField();
+    TextField txtCourseName = new TextField();
+    TextField txtCourseDepartment = new TextField();
+    TextField txtCourseNumber = new TextField();
+    TextField txtInstructorName = new TextField();
+    // creating the buttons to edit 
+    Button btnCreateCourse = new Button("Create Course");
+    Button btnSearchCourse = new Button("Search");
+    Button btnResetCourse = new Button("Reset");
+    Button btnUpdateCourse = new Button("Update");
+    // result label to display to student
+    resultLabel = new Label();
+
+    // adding labels, textboxes and buttons to the scene 
+    gridPane.add(lblCourseID, 0, 0);
+    gridPane.add(txtCourseID, 1, 0);
+    gridPane.add(btnSearchCourse, 2, 0);
+    gridPane.add(lblCourseName, 0, 1);
+    gridPane.add(txtCourseName, 1, 1);
+    gridPane.add(lblCourseDepartment, 0, 2);
+    gridPane.add(txtCourseDepartment, 1, 2);
+    gridPane.add(lblCourseNumber, 0, 3);
+    gridPane.add(txtCourseNumber, 1, 3);
+    gridPane.add(lblInstructorName, 0,4);
+    gridPane.add(txtInstructorName, 1, 4);
+    gridPane.add(resultLabel, 1, 7);
+    btnBox.setAlignment(Pos.CENTER_LEFT);
+    btnBox.getChildren().addAll(btnResetCourse, btnUpdateCourse);
+
+    // action event for when the user clicks on search 
+    btnSearchCourse.setOnAction(e -> {
+      // user will enter the course id 
+      String courseID = txtCourseID.getText();
+      // getting the course id from the course file class 
+      Courses editCourse = courseManager.getCourse(courseID);
+      if(editCourse != null)  // if the course id is found teh following information will be displayed 
+      {
+        // course id will not be editable 
+        txtCourseID.setEditable(false);
+        txtCourseName.setText(editCourse.getCourseName());
+txtCourseDepartment.setText(editCourse.getCourseDepartment());
+        txtCourseNumber.setText(editCourse.getCourseNumber());
+    txtInstructorName.setText(editCourse.getInstructorName());
+        resultLabel.setText("Course Found!");
+      }
+      else // if the course id is not found this message will be dispaleyd 
+      {
+        resultLabel.setText("Error: Course not found");
+      }
+    });
+// when the user clicks reset, all textfields will be cleared 
+    btnResetCourse.setOnAction(e -> {
+        txtCourseName.clear();
+        txtCourseDepartment.clear();
+        txtCourseNumber.clear();
+        txtInstructorName.clear();
+        resultLabel.setText("Course has been reset. Please enter new Information");
+    });
+
+    // when the user clicks update the course will be updated 
+    btnUpdateCourse.setOnAction(e -> {
+      // all fields except the id will be able to updated 
+      String courseID = txtCourseID.getText();
+      String courseName = txtCourseName.getText();
+      String courseDepartment = txtCourseDepartment.getText();
+      String courseNumber = txtCourseNumber.getText();
+      String instructorName = txtInstructorName.getText();
+      // adding updated course info to the course and course file manager class 
+      Courses updateCourse = new Courses(courseID, courseName, courseDepartment, courseNumber, instructorName);
+      try {
+        courseManager.updateCourse(updateCourse);
+        // message to the user when the course has been updated.
+        resultLabel.setText("Course has been updated!");
+      } catch(IOException ex) {
+        ex.printStackTrace();
+        resultLabel.setText("Course was not updated");
+      }
+
+    });
+
+    // creating the scene and stage 
+    gridPane.add(btnBox, 1, 5, 2, 1);
+    gridPane.setPadding(new Insets(10));
+    gridPane.setHgap(10);
+    gridPane.setVgap(10);
+    layout.setCenter(gridPane);
+  }
+
+  private void addEnrollmentPage(BorderPane layout, EnrollmentFileManager enrollmentManager, StudentFileManager studentManager, CourseFileManager courseManager) throws IOException // this page will be used to edit and enrollment 
+  {
+    // add enrollemnt page 
+    Stage stage = new Stage();
+    GridPane gridPane = new GridPane();
+
+    // labels and textboxes for the user input 
+    Label lblEnrollmentID = new Label("Enrollment ID");
+    Label lblStudentID = new Label("Student ID");
+    Label lblStudentName = new Label("Student Name");              Label lblCourseID = new Label("Course ID");
+    Label lblCourseNumber = new Label("Course Number");
+    Label lblCourseName = new Label("Course Name");
+    Label lblSemester = new Label("Semester");
+    Label lblYear = new Label("Year");
+    Label lblGrade = new Label("Grade");
+    TextField txtEnrollmentID = new TextField();
+    TextField txtStudentID = new TextField();
+    TextField txtStudentName = new TextField();
+    TextField txtCourseID = new TextField();
+    TextField txtCourseNumber = new TextField();
+    TextField txtCourseName = new TextField();
+    TextField txtYear = new TextField();
+    // combo boxes created for the semetser and grades
+    ComboBox<String> comboSemester = new ComboBox<>();
+    ComboBox<String> comboGrade = new ComboBox<>();
+   // making the items for the comboboxes in order for the user to select these options 
+    comboSemester.getItems().addAll("Fall", "Spring", "Summer", "Winter");
+    comboSemester.setPromptText("Semester");
+    comboGrade.getItems().addAll("A", "B", "C", "D", "F", "W", "AR", "P", "NP", "RD", "I");
+    comboGrade.setPromptText("Grade");
+     Button btnFindStudent = new Button("Find Student");
+     Button btnFindCourse = new Button("Find Course");
+    Button btnCreateEnrollment = new Button("Create Enrollment"); // button made to create the enrollment 
+    // creating result label to dispaly to the user
+    resultLabel = new Label();
+    // adding all labels, textboxes, combo boxes, and buttons to the gridpane 
+    gridPane.add(lblEnrollmentID, 0, 0);
+    gridPane.add(txtEnrollmentID, 1, 0);
+    gridPane.add(lblStudentID, 0, 1);
+    gridPane.add(txtStudentID, 1, 1);
+    gridPane.add(btnFindStudent, 2, 1);
+    gridPane.add(lblStudentName, 0, 2);
+    gridPane.add(txtStudentName, 1,2);
+    gridPane.add(lblCourseID, 0, 3);
+    gridPane.add(txtCourseID, 1, 3);
+    gridPane.add(btnFindCourse, 2, 3);
+    gridPane.add(lblCourseNumber, 0, 4);
+    gridPane.add(txtCourseNumber, 1, 4);
+    gridPane.add(lblCourseName, 0, 5);
+    gridPane.add(txtCourseName, 1, 5);
+    gridPane.add(lblSemester, 0, 6);
+    gridPane.add(comboSemester, 1, 6);
+    gridPane.add(lblYear, 0,7);
+    gridPane.add(txtYear, 1, 7);
+    gridPane.add(lblGrade, 0,8);
+    gridPane.add(comboGrade, 1, 8);
+    gridPane.add(btnCreateEnrollment, 1, 9);
+    gridPane.add(resultLabel, 1, 10);
+
+    // action event when the user clicks on search button for the student 
+    btnFindStudent.setOnAction(e -> {
+      String studentID = txtStudentID.getText(); // user enters student ID
+     Student viewStudent = studentManager.getStudent(studentID); // getting the student ID from the student file manager class
+      if(viewStudent != null) // if the ID is found the following information will be displayed 
+      {
+        String fullName = viewStudent.getStudentFirstName() + " " + viewStudent.getStudentLastName();
+        txtStudentName.setText(fullName);
+        resultLabel.setText("Student Found!");
+      }
+      else 
+      {
+        // if student is not found this message will be dispalyed. 
+        resultLabel.setText("Error : Student Not Found!");
+      }
+    });
+
+    // action even when the suer clicks on search button for the course 
+    btnFindCourse.setOnAction(e -> {
+      String courseID = txtCourseID.getText(); // user enters course ID
+      Courses viewCourse = courseManager.getCourse(courseID); // getting the course ID from the course file manager class
+      if(viewCourse != null)
+      {
+        // dispalying the course information for the course class 
+        String courseNumber = viewCourse.getCourseNumber();
+        txtCourseNumber.setText(courseNumber);
+        String courseName = viewCourse.getCourseName();
+        txtCourseName.setText(courseName);
+        // if the course is found the following message will be displayed 
+        resultLabel.setText("Course Found!");
+      }
+      else 
+      {
+        // if the course is not found the following message will be displayed 
+        resultLabel.setText("Error : Course Not Found!");
+      }
+    });
+
+    // action event when the user clicks on create enrollment 
+    btnCreateEnrollment.setOnAction(e -> {
+
+      String enrollmentID = txtEnrollmentID.getText(); // user enters enrollment ID
+      String studentID = txtStudentID.getText(); // user enters student ID
+      Student viewStudent = studentManager.getStudent(studentID);
+      String courseID = txtCourseID.getText(); // user enters course ID
+      Courses viewCourse = courseManager.getCourse(courseID); // getting the course ID from the course file manager class
+      
+      String semester = comboSemester.getValue(); // user selects semester 
+      String year = txtYear.getText(); // user enters year
+      String grade = comboGrade.getValue(); // user selects grade
+      // if statement if any field is left empty 
+      if(enrollmentID.isEmpty() ||viewStudent == null || viewCourse == null || semester.isEmpty() || year.isEmpty() || grade == null)
+      {
+        // result lable  will dispaly if any field is left empty
+        resultLabel.setText("Please enter all required fields and ensure students and courses are found!");
+      }
+      else 
+      {
+        // creating enrollment object with the user input 
+        Enrollment newEnrollment = new Enrollment(enrollmentID, viewStudent.getStudentID(), viewCourse.getCourseID(), semester, year, grade);
+        try
+          {
+            // adding enrollment to the enrollment file manager class
+            enrollmentManager.addEnrollment(newEnrollment);
+            // message to the user 
+            resultLabel.setText("Enrollment Created!");
+              
+          } catch(IOException ex)
+          {
+            ex.printStackTrace();
+            resultLabel.setText("Error: Enrollment not created!");
+          }
+      }
+      
+    });
+
+    // setting the stage and scene 
+    gridPane.setPadding(new Insets(10));
+    gridPane.setHgap(10);
+    gridPane.setVgap(10);
+    layout.setCenter(gridPane);
+
+  }
+
+  private void editEnrollmentPage(BorderPane layout, EnrollmentFileManager enrollmentManager, StudentFileManager studentManager, CourseFileManager courseManager) throws IOException // only changes to the enrollment will be able to made in this page 
+  {
+    // edit enrollment page layout 
+    Stage stage = new Stage();
+    GridPane gridPane = new GridPane();
+    HBox btnBox = new HBox(10);
+
+    // creating the label and textboxes for the user input 
+    Label lblEnrollmentID = new Label("Enrollment ID");
+    Label lblStudentID = new Label("Student ID");
+    Label lblStudentName = new Label("Student Name");
+    Label lblCourseID = new Label("Course ID");
+    Label lblCourseNumber = new Label("Course Number");
+    Label lblCourseName = new Label("Course Name");
+    Label lblSemester = new Label("Semester");
+    Label lblYear = new Label("Year");
+    Label lblGrade = new Label("Grade");
+    TextField txtEnrollmentID = new TextField();
+    TextField txtStudentID = new TextField();
+    TextField txtStudentName = new TextField();
+    TextField txtCourseID = new TextField();
+    TextField txtCourseNumber = new TextField();
+    TextField txtCourseName = new TextField();
+    TextField txtYear = new TextField();
+    // Creating the combo boxes for the semester and grade 
+    ComboBox<String> comboSemester = new ComboBox<>();
+    ComboBox<String> comboGrade = new ComboBox<>();
+    // creeating all the items for the combo boxes 
+    comboSemester.getItems().addAll("Fall", "Spring", "Summer", "Winter");
+    comboSemester.setPromptText("Semester");
+    comboGrade.getItems().addAll("A", "B", "C", "D", "F", "W", "AR", "P", "NP", "RD", "I");
+    comboGrade.setPromptText("Grade");
+    // creating the buttons to edit enrollment 
+    Button btnSearchEnrollment = new Button("Search");
+    Button btnResetEnrollment = new Button("Reset");
+    Button btnUpdateEnrollment = new Button("Update");
+
+    resultLabel = new Label();
+
+    // adding all the labels, textboxes, comboxes, and buttons to the grid pane 
+    gridPane.add(lblEnrollmentID, 0, 0);
+    gridPane.add(txtEnrollmentID, 1, 0);
+    gridPane.add(btnSearchEnrollment, 2, 0);
+    gridPane.add(lblStudentID, 0, 1);
+    gridPane.add(txtStudentID, 1, 1);
+    gridPane.add(lblStudentName, 0, 2);
+    gridPane.add(txtStudentName, 1, 2);
+    gridPane.add(lblCourseID, 0, 3);
+    gridPane.add(txtCourseID, 1, 3);
+    gridPane.add(lblCourseNumber, 0, 4);
+    gridPane.add(txtCourseNumber, 1, 4);
+    gridPane.add(lblCourseName, 0, 5);
+    gridPane.add(txtCourseName, 1, 5);
+    gridPane.add(lblSemester, 0, 6);
+    gridPane.add(comboSemester, 1, 6);
+    gridPane.add(lblYear, 0,7);
+    gridPane.add(txtYear, 1, 7);
+    gridPane.add(lblGrade, 0,8);
+    gridPane.add(comboGrade, 1, 8);
+    // setting allignment ofr th eboxes 
+    btnBox.setAlignment(Pos.CENTER_LEFT);
+    btnBox.getChildren().addAll(btnResetEnrollment, btnUpdateEnrollment);
+    gridPane.add(btnBox, 1, 9, 2, 1);
+    gridPane.add(resultLabel, 1, 10);
+
+
+    // action event for when the user clicks on the search button 
+    btnSearchEnrollment.setOnAction(e -> {
+        String enrollmentID = txtEnrollmentID.getText();
+      // checking if the id exist in the enrollment file manager class 
+        Enrollment editEnrollment = enrollmentManager.getEnrollment(enrollmentID);
+        if (editEnrollment != null) {
+          // if the id is found, it will not be editable 
+            txtEnrollmentID.setEditable(false);
+
+            // Set student information
+          // checking to see if the tsudent id is found  in the student file manager clas s
+            String studentID = editEnrollment.getStudentID();
+            Student updateStudent = studentManager.getStudent(studentID);
+            if (updateStudent != null) {
+                txtStudentID.setText(studentID);
+              // student name will be set tot he name in the studnet file maanger class combined. 
+                String fullName = updateStudent.getStudentFirstName() + " " + updateStudent.getStudentLastName();
+                txtStudentName.setText(fullName);
+            }
+            // id and name wont be editable, user will need to edit student to eidt these fields 
+            txtStudentID.setEditable(false);
+            txtStudentName.setEditable(false);
+
+            // Set course information
+            String courseID = editEnrollment.getCourseID();
+            Courses updateCourse = courseManager.getCourse(courseID);
+          // checking if the course id is in the course file maanger class
+            if (updateCourse != null) {
+              // displaying the course information in the text boxxes
+                txtCourseID.setText(courseID);
+                txtCourseNumber.setText(updateCourse.getCourseNumber());
+                txtCourseName.setText(updateCourse.getCourseName());
+            }
+          // course fields will not be editable 
+            txtCourseID.setEditable(false);
+            txtCourseNumber.setEditable(false);
+            txtCourseName.setEditable(false);
+
+            // Set enrollment information
+          // semester, yeare, and grades will be editable 
+
+comboSemester.setValue(editEnrollment.getEnrollmentSemester());
+          txtYear.setText(editEnrollment.getEnrollmentYear());
+    comboGrade.setValue(editEnrollment.getEnrollmentGrade());
+          // message to the user if th eenrollemtn is found
+            resultLabel.setText("Enrollment Found!");
+        } else {
+          // message to the user if the enrollment is found 
+            resultLabel.setText("Error: Enrollment Not Found!");
+        }
+    });
+
+    btnResetEnrollment.setOnAction(e -> {
+      // when the reset button is clicked, the text boxes of semester, year, and grade will be cleared.
+      comboSemester.setValue(null);
+      txtYear.clear();
+      comboGrade.setValue(null);
+      // message to the user 
+      resultLabel.setText("Enrollment has been reset, Please Enter new Information.");
+    });
+    // action event for when the user clicks on the update button 
+    btnUpdateEnrollment.setOnAction(e -> {
+      String enrollmentID = txtEnrollmentID.getText();
+      String studentID = txtStudentID.getText();
+      String courseID = txtCourseID.getText();
+      String semester = comboSemester.getValue();
+      String year = txtYear.getText();
+      String grade = comboGrade.getValue();
+
+      Enrollment newUpdatedEnrollment = new Enrollment(enrollmentID, studentID, courseID, semester, year, grade);
+      try
+        {
+          // updating the enrollment in the enrollment file manager class 
+          enrollmentManager.updateEnrollment(newUpdatedEnrollment);
+          // message to the user 
+          resultLabel.setText("Erollment has been updated!");
+        } catch (IOException ex){
+          ex.printStackTrace();
+          resultLabel.setText("Error: Enrollment did not update");
+        }
+        
+    });
+    
+// setting and creating the scene/stage 
+    gridPane.setPadding(new Insets(10));
+    gridPane.setHgap(10);
+    gridPane.setVgap(10);
+    layout.setCenter(gridPane);
+  }
+      public void reportsPage(BorderPane layout, EnrollmentFileManager enrollmentManager, StudentFileManager studentManager, CourseFileManager courseManager) throws IOException // report page that will display information that the ueser enetred. This page will ask for the year, course name, and semster of when the class was taken. For example Year: 2022, Course Name: Calc I, and Semeste: Spring. Then the page will diaply the student along with the course they took and grade they recieved. 
+      {
+          Stage stage = new Stage();
+          GridPane gridPane = new GridPane();
+          BorderPane borderPane = new BorderPane();
+
+          // creating labels and text boxes for the user input 
+          Label lblYear = new Label("Year");
+          Label lblSemester = new Label("Semester");
+          Label lblCourseName = new Label("Course Name");
+
+          // creating the textfields for the user input 
+          TextField txtYear = new TextField();
+          TextField txtCourseName = new TextField();
+          // combo box for the semster 
+          ComboBox <String> comboSemester = new ComboBox<>();
+          // creating the items for the combo box 
+          comboSemester.getItems().addAll("Fall", "Spring", "Summer", "Winter");
+          comboSemester.setPromptText("Semester");
+
+          // creating the button for the user to search 
+           Button btnSearch = new Button("Search");
+
+          // result label 
+          Label resultLabel = new Label();
+
+          // adding labels, txt fields, and combo boxes to the grid pane 
+          gridPane.add(lblYear, 0, 0);
+          gridPane.add(txtYear, 1, 0);
+          gridPane.add(lblSemester, 0, 1);
+          gridPane.add(comboSemester, 1, 1);
+          gridPane.add(lblCourseName, 0, 2);
+          gridPane.add(txtCourseName, 1, 2);
+          gridPane.add(btnSearch, 1, 3);
+          gridPane.add(resultLabel, 1, 4);
+
+        // creating he table view for report information to show what the user entered 
+
+          TableView<Reports> table = new TableView<>();
+
+        TableColumn<Reports, String> studentIDColumn = new TableColumn<>("Student ID");
+        studentIDColumn.setCellValueFactory(new PropertyValueFactory<Reports, String>("studentID"));
+
+          TableColumn<Reports, String> lastNameColumn = new TableColumn<>("Last Name");
+          lastNameColumn.setCellValueFactory(new PropertyValueFactory<Reports, String>("studentLastName"));
+
+          TableColumn<Reports, String> firstNameColumn = new TableColumn<>("First Name");
+          firstNameColumn.setCellValueFactory(new PropertyValueFactory<Reports, String> ("studentFirstName"));
+
+        TableColumn<Reports, String> courseDepartmentColumn = new TableColumn<>("Course Department");
+        courseDepartmentColumn.setCellValueFactory(new PropertyValueFactory<Reports, String>("courseDepartment"));
+
+        TableColumn<Reports, String> courseNumberColumn = new TableColumn<>("Course Number");
+        courseNumberColumn.setCellValueFactory(new PropertyValueFactory<Reports, String>("courseNumber"));
+
+        TableColumn<Reports, String> courseNameColumn = new TableColumn<>("Course Name");
+        courseNameColumn.setCellValueFactory(new PropertyValueFactory<Reports, String>("courseName"));
+
+        TableColumn<Reports, String> instructorNameColumn = new TableColumn<>("Instructor Name");
+        instructorNameColumn.setCellValueFactory(new PropertyValueFactory<Reports, String>("instructorName"));
+
+        TableColumn<Reports, String> enrollmentSemesterColumn = new TableColumn<>("Semester");
+        enrollmentSemesterColumn.setCellValueFactory(new PropertyValueFactory<Reports, String>("enrollmentSemester"));
+
+          TableColumn<Reports, String> gradeColumn = new TableColumn<>("Grades");
+          gradeColumn.setCellValueFactory(new PropertyValueFactory<Reports, String> ("enrollmentGrade"));
+
+          table.getColumns().addAll(studentIDColumn, lastNameColumn, firstNameColumn, courseDepartmentColumn, courseNumberColumn, courseNameColumn, instructorNameColumn, enrollmentSemesterColumn, gradeColumn);
+          table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+          // action for when the suer clicks on search 
+          btnSearch.setOnAction(e ->{
+            // user input for the year, semster, and cours ename 
+            String reportYear = txtYear.getText();
+            String reportSemester = comboSemester.getValue();
+            String reportCourseName = txtCourseName.getText();
+
+            // clearing the table
+            table.getItems().clear();
+            // boolean to check if the report is found and to dispay message to the user. 
+            boolean reportFound = false;
+
+            // creating the for loop to get the report information 
+            for(Enrollment reportEnrollment : enrollmentManager.getEnrollment()) // reading the enrollment file 
+              {
+                // creating the if statement to check if the suer inout matches with the information in the course file
+                Courses reportCourses = courseManager.getCourse(reportEnrollment.getCourseID());
+// checking if the information enetred matches with the information in each file. 
+                if(reportEnrollment.getEnrollmentYear().equals(reportYear) && reportEnrollment.getEnrollmentSemester().equals(reportSemester) && reportCourses.getCourseName().equals(reportCourseName))
+                {
+                  // checking if the student is in the course 
+                  Student reportStudent = studentManager.getStudent(reportEnrollment.getStudentID());
+                  if(reportStudent != null)
+                  {
+                    // if the student is in the course then it will be added to the table and report class 
+                    Reports enrollReports = new Reports(reportStudent.getStudentID(),reportStudent.getStudentLastName(), reportStudent.getStudentFirstName(), reportCourses.getCourseDepartment(), reportCourses.getCourseNumber(), reportCourses.getCourseName(), reportCourses.getInstructorName(),reportEnrollment.getEnrollmentSemester(),reportEnrollment.getEnrollmentGrade());
+                    table.getItems().add(enrollReports);
+                    reportFound = true;
+                    // report if found, used in an if statement 
+                  }
+   
+                }
+                  
+              }
+            if(reportFound)
+            {
+              // message to the user if the report is found 
+              resultLabel.setText("Report Found!");
+            }
+            else
+            {
+              // message if the report is not found
+              resultLabel.setText("Error: Report Not Found!");
+            }
+              });
+        
+          // setting the search bar to the top and the table to the bottom 
+          gridPane.setPadding(new Insets(10));
+          gridPane.setHgap(10);
+          gridPane.setVgap(10);
+          borderPane.setTop(gridPane);
+          borderPane.setCenter(table);
+
+          layout.setCenter(borderPane);
+
+         
+      }
+  // when the user clicks on exit, the program will end. 
+    public void exitPage(BorderPane layout, Stage primaryStage)
+      {
+        primaryStage.close();
+      }
+
+
+}
+
+// Student class holds the information of the student such as id, first name, last name, address, city, state, and zip code.
+public class Student
+{
+  private String studentID;
+  private String studentFirstName;
+  private String studentLastName;
+  private String studentAddress;
+  private String studentCity;
+  private String studentState;
+  private String studentZip;
+
+  // defaul constructor 
+  public Student(String id, String firstName, String lastName, String address, String city, String state, String zip)
+  {
+    this.studentID = id;
+    this.studentFirstName = firstName;
+    this.studentLastName = lastName;
+    this.studentAddress = address;
+    this.studentCity = city;
+    this.studentState = state;
+    this.studentZip = zip;
+  }
+
+  // Mutators 
+
+  public void setStudentID(String id)
+  {
+    studentID = id;
+  }
+
+  public void setStudentFirstName(String firstName)
+  {
+   studentFirstName = firstName; 
+  }
+
+  public void setStudentLastName(String lastName)
+  {
+    studentLastName = lastName;
+  }
+
+  public void setStudentAddress(String address)
+  {
+    studentAddress = address;
+  }
+
+  public void setStudentCity(String city)
+  {
+    studentCity = city;
+  }
+
+  public void setStudentState(String state)
+  {
+    studentState = state;
+  }
+
+  public void setStudentZip(String zip)
+  {
+    studentZip = zip;
+  }
+  // Accessors
+  public String getStudentID()
+  {
+    return studentID;
+  }
+
+  public String getStudentFirstName()
+  {
+    return studentFirstName;
+  }
+
+  public String getStudentLastName()
+  {
+    return studentLastName;
+  }
+
+  public String getStudentAddress()
+  {
+    return studentAddress;
+  }
+
+  public String getStudentCity()
+  {
+    return studentCity;
+  }
+
+  public String getStudentState()
+  {
+    return studentState;
+  }
+
+  public String getStudentZip()
+  {
+    return studentZip;
+  }
+
+ // to string method to display the stduent info 
+  @Override
+  public String toString() 
+  {
+      return studentID + "," + studentFirstName +  "," + studentLastName + "," + studentAddress + "," + studentCity + "," + studentState + "," + studentZip;
+  }
+
+}
+
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+// Student file manager class
+class StudentFileManager 
+  {
+    // Array list to store student information 
+   private  ArrayList<Student> studentsList;
+   private String fileName = "finalstudent.txt";
+
+// constructor opens the student file, reads each student file information into the array list and closes the file 
+    public StudentFileManager() throws IOException 
+    {
+      String id; 
+      String firstName; 
+      String lastName;
+      String address;
+      String city;
+      String state;
+      String zip;
+      studentsList = new ArrayList<Student>();
+      String fileName = "finalstudent.txt";
+      String line;
+      String [] studentInfo;
+
+      File file = new File(fileName);
+      if(!file.exists())
+      {
+        file.createNewFile();
+      }
+      Scanner fileScan = new Scanner(file);
+      while (fileScan.hasNextLine()) 
+      {
+          line = fileScan.nextLine();
+          studentInfo = line.split(",");
+          if (studentInfo.length >= 7) {
+              id = studentInfo[0];
+              firstName = studentInfo[1];
+              lastName = studentInfo[2];
+              address = studentInfo[3];
+              city = studentInfo[4];
+              state = studentInfo[5];
+              zip = studentInfo[6];
+              Student newStudent = new Student(id, firstName, lastName, address, city, state, zip);
+              studentsList.add(newStudent);
+          } else {
+              // Handle the case where the line does not contain enough information
+            //  System.err.println("Warning: Invalid line format. Skipping line: " + line);
+          }
+      }
+
+      fileScan.close();
+
+    }
+
+ // checks to see if the student with the id exist in the array list. If yes, then reads the student info into student object and returns the student object. If the student with id does not exist, return null
+   public Student getStudent(String id)
+    {
+      for(Student student : studentsList)
+      {
+        if(student.getStudentID().equals(id))
+          return student;
+      }
+      return null;
+    }
+
+   // calls the get student method to check if the student with the id exist in the student array list if no then it adds the student into the end of the array list.  
+   // opens the student file and writes the array list to the file returns true. I the student with id exist, display an error message and retrun false 
+   public boolean addStudent(Student student) throws IOException {
+      if (getStudent(student.getStudentID()) != null) {
+          System.out.println("Student with ID already exists");
+          return false;
+      }
+
+      // Add new student to ArrayList
+      studentsList.add(student);
+
+      // Append new student to file
+      try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
+          writer.write(student.toString());
+          writer.newLine();
+      }
+
+      return true;
+  }
+
+
+// call the get student method with id to check if the student with the id exist in the student array list. If found, updates the object in the arraylsit for that student id. Opens the student file, write sthe whole arraylist back into the file and returns true. IF not found, displays error message and retruns false. 
+    public boolean updateStudent(Student student) throws IOException
+    { // if the students exist then you can update the student info 
+      Student studentExist = getStudent(student.getStudentID());
+      if(studentExist != null)
+      {
+          studentExist.setStudentFirstName(student.getStudentFirstName());
+        studentExist.setStudentLastName(student.getStudentLastName());
+        studentExist.setStudentAddress(student.getStudentAddress());
+        studentExist.setStudentCity(student.getStudentCity());
+        studentExist.setStudentState(student.getStudentState());
+        studentExist.setStudentZip(student.getStudentZip());
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+          for(Student editStudent : studentsList)
+            {
+          writer.write(editStudent.toString());
+          writer.newLine();
+            }
+        }
+        return true;
+      }
+      else 
+      {
+        System.out.println("Error: Student with id not found");
+        return false;
+      }
+    }
+
+ 
+
+}
+
+// courses class that holds the course id, name, department, number, and instructor name. 
+public class Courses 
+{
+
+      private String courseID;
+      private String courseName;
+      private String courseDepartment;
+      private String courseNumber;
+      private String instructorName;
+
+      // default constructor 
+      public Courses(String id, String name, String department, String number, String profName)
+      {
+        this.courseID = id;
+        this.courseName = name;
+        this.courseDepartment = department;
+        this.courseNumber = number;
+        this.instructorName = profName;
+      }
+
+      // Mutators  
+
+      public void setCourseID(String id)
+      {
+        courseID = id;
+      }
+
+      public void setCourseName(String name)
+      {
+       courseName = name; 
+      }
+
+      public void setCourseDepartment(String department)
+      {
+        courseDepartment = department;
+      }
+
+      public void setCourseNumber(String number)
+      {
+        courseNumber = number;
+      }
+
+      public void setInstrcutorName(String profName)
+      {
+        instructorName = profName;
+      }
+
+      // Accessors
+      public String getCourseID()
+      {
+        return courseID;
+      }
+
+      public String getCourseName()
+      {
+        return courseName;
+      }
+
+      public String getCourseDepartment()
+      {
+        return courseDepartment;
+      }
+
+      public String getCourseNumber()
+      {
+        return courseNumber;
+      }
+
+      public String getInstructorName()
+      {
+        return instructorName;
+      }
+
+      // to string method to dispaly course info.
+      @Override
+      public String toString() 
+      {
+          return courseID + "," + courseName +  "," + courseDepartment + "," + courseNumber + "," + instructorName;
+      }
+
+}
+
+// course file manager class which holds all user entered information in an array list. 
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+
+public class CourseFileManager 
+{
+  private ArrayList<Courses> courseList;
+  private String fileName = "finalCourses.txt";
+
+  // constructor opens the course file, reads each course file information in the array list and closes the file 
+  public CourseFileManager()throws IOException
+  {
+    String id;
+    String name;
+    String department;
+    String number;
+    String profName;
+    courseList = new ArrayList<Courses>();
+    String line;
+    String [] courseInfo;
+
+    File file = new File (fileName);
+    if(!file.exists())
+    {
+      file.createNewFile();
+    }
+    Scanner fileScan = new Scanner(file);
+    while (fileScan.hasNext())
+    {
+      line = fileScan.nextLine();
+      courseInfo = line.split(",");
+      if(courseInfo.length >= 5) // storing the course information into array list 
+      {
+        id = courseInfo[0];
+        name = courseInfo[1];
+        department = courseInfo[2];
+        number = courseInfo[3];
+        profName = courseInfo[4];
+        Courses newCourse = new Courses(id, name, department, number, profName);
+        courseList.add(newCourse);
+      }
+      else 
+      {
+
+      }
+    }
+    fileScan.close();
+
+  }
+
+  // chekc to see if the course with the id exists in the array list. If it does then it reads the course info into the course object and returns the course objec. If the student with id does not exist, return null
+  public Courses getCourse(String id)
+  {
+    for(Courses course : courseList) // checking student id in the array list 
+    {
+      if(course.getCourseID().equals(id))
+      {
+        return course;
+      }
+    }
+    return null;
+  }
+
+  // call the get course method to check if the course with the id exists in the course array list. If not, then it adds the course info at the end of the array list.
+  // opens the course file and writes the array list file returns true. If the course with id exist, dispalpy an error message and return false;
+  public boolean addCourse(Courses course) throws IOException
+  {
+    if(getCourse(course.getCourseID()) != null)
+    {
+      System.out.println("Course ID aleady exists");
+      return false;
+    }
+
+    courseList.add(course);
+
+    try(BufferedWriter writer = new BufferedWriter (new FileWriter(fileName, true)))
+    {
+      writer.write(course.toString());
+      writer.newLine();
+    }
+    return true;
+  }
+
+  // call the get course method with id to check if the student with the id exist in the course array list. If found, it updates the object in the array list for that course id. It opens the course file, writes the course back into the array list and returns true. If not found displays error message and returns false 
+  public boolean updateCourse(Courses course) throws IOException
+  {
+    Courses courseExist = getCourse(course.getCourseID());
+    if(courseExist != null)
+    {
+      courseExist.setCourseName(course.getCourseName());
+      courseExist.setCourseDepartment(course.getCourseDepartment());
+      courseExist.setCourseNumber(course.getCourseNumber());
+      courseExist.setInstrcutorName(course.getInstructorName());
+
+      try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName)))
+      {
+        for(Courses editCourse : courseList)
+        {
+          writer.write(editCourse.toString());
+          writer.newLine();
+        }
+      }
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
+ 
+
+
+}
+
+// enrollment class that holds the enrollment id, student id, course id, semester, year, and grade 
+public class Enrollment 
+{
+  private String enrollmentID;
+  private String studentID;
+  private String courseID;
+  private String enrollmentSemester;
+  private String enrollmentYear;
+  private String enrollmentGrade;
+  
+  // Default constructor
+  public Enrollment(String enrollID, String studID, String crseID,  String semester, String year ,String grade)
+  {
+    this.enrollmentID = enrollID;
+    this.studentID = studID;
+    this.courseID = crseID;
+    this.enrollmentSemester = semester;
+    this.enrollmentYear = year;
+    this.enrollmentGrade = grade;
+  }
+
+  // Mutators 
+
+  public void setEnrollmentID(String enrollID)
+  {
+    enrollmentID = enrollID;
+  }
+
+  public void setStudentID(String studID)
+  {
+    studentID = studID;
+  }
+
+  public void setCourseID(String crseID)
+  {
+    courseID = crseID;
+  }
+
+  public void setEnrollmentSemester(String semester)
+  {
+    enrollmentSemester = semester;
+  }
+  public void setEnrollmentYear(String year)
+  {
+    enrollmentYear = year;
+  }
+
+  public void setEnrollmentGrade(String grade)
+  {
+    enrollmentGrade = grade;
+  }
+  // Accessors
+  public String getEnrollmentID()
+  {
+    return enrollmentID;
+  }
+
+  public String getStudentID()
+  {
+    return studentID;
+  }
+
+  public String getCourseID()
+  {
+    return courseID;
+  }
+
+  public String getEnrollmentSemester()
+  {
+    return enrollmentSemester;
+  }
+
+  public String getEnrollmentYear()
+    {
+      return enrollmentYear;
+    }
+
+  public String getEnrollmentGrade() 
+  {
+    return enrollmentGrade;
+  }
+
+  // to string method to display enrollment info 
+  @Override
+  public String toString()
+  {
+    return enrollmentID + "," + studentID + "," + courseID + "," + enrollmentSemester + "," + enrollmentYear + "," + enrollmentGrade;
+  }
+
+ 
+
+
+}
+
+// enrollment file manager class 
+
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class EnrollmentFileManager 
+{
+  private ArrayList<Enrollment> enrollmentList;
+  private String fileName = "finalEnrollment.txt";
+
+  //Constructor opens the enrollment file, reads each enrollment information into array list and closes the file.
+  public EnrollmentFileManager() throws IOException
+  {
+    String enrollID;
+    String studID;
+    String crseID;
+    String semester;
+    String grade;
+    String year;
+    enrollmentList = new ArrayList<>();
+    String line;
+    String [] enrollmentInfo;
+
+    File file = new File (fileName);
+    if(!file.exists())
+    {
+      file.createNewFile();
+    }
+
+    Scanner fileScan = new Scanner(file);
+    while (fileScan.hasNext())
+    {
+      line = fileScan.nextLine();
+      enrollmentInfo = line.split(",");
+      if(enrollmentInfo.length >= 6)
+      {
+        enrollID = enrollmentInfo[0];
+        studID = enrollmentInfo[1];
+        crseID = enrollmentInfo[2];
+        semester = enrollmentInfo[3];
+        year = enrollmentInfo[4];
+        grade = enrollmentInfo[5];
+
+        Enrollment newEnrollment = new Enrollment(enrollID, studID, crseID, semester, year, grade);
+        enrollmentList.add(newEnrollment);
+
+      }
+      else
+      {
+
+      }
+    }
+    fileScan.close();
+  }
+
+  // checks to see if the enrollemtn id exist in the array list. If found, returns the object. If not founmd returns null
+  public Enrollment getEnrollment(String enrollID)
+  {
+    for(Enrollment enroll : enrollmentList)
+    {
+      if(enroll.getEnrollmentID().equals(enrollID))
+      {
+        return enroll;
+      }
+    }
+
+    return null;
+
+  }
+// calls the getEnrollemt method to check of the enrollemt id exist in the array list. If not found then it adds the enrollemnt to the end of the arraylist. If found message willbe displayed. 
+  public boolean addEnrollment(Enrollment enroll) throws IOException
+  {
+    if(getEnrollment(enroll.getEnrollmentID()) != null)
+    {
+      System.out.println("Enrollment with ID exists");
+      return false;
+    }
+
+    enrollmentList.add(enroll);
+
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true)))
+    {
+      writer.write(enroll.toString());
+      writer.newLine();
+    }
+    return true;
+  }
+
+  // calls the getEnrollment method to check if the enrollment id exist in the array list. If found, it will aloow the user to update the enrollment information. I fnot found message will be dispalyed. 
+
+  public boolean updateEnrollment(Enrollment enroll) throws IOException
+  {
+    Enrollment enrollExist = getEnrollment(enroll.getEnrollmentID());
+    if(enrollExist != null)
+    {
+      enrollExist.setEnrollmentSemester(enroll.getEnrollmentSemester());
+      enrollExist.setEnrollmentYear(enroll.getEnrollmentYear());
+      enrollExist.setEnrollmentGrade(enroll.getEnrollmentGrade());
+
+      try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName)))
+      {
+        for(Enrollment editEnrollment : enrollmentList)
+        {
+          writer.write(editEnrollment.toString());
+          writer.newLine();
+
+        }
+      }
+      return true;
+    }
+    else
+    {
+      System.out.println("Error Enrollment is not found");
+      return false;
+    }
+  }
+
+  
+// calls the getEnrollment method to check if the enrollemt ecist in the array list. If it is found the array list will be retured. This is used for the report page.
+ public ArrayList<Enrollment> getEnrollment()
+  {
+    return enrollmentList;
+  }
+
+ 
+
+}
+
+// Report class added in order get information on to the table view
+public class Reports
+  {
+    private String studentID;
+    private String studentLastName;
+    private String studentFirstName;
+    private String courseDepartment;
+    private String courseNumber;
+    private String courseName;
+    private String instructorName;
+    private String enrollmentSemester;
+    private String enrollmentGrade;
+    
+
+    // Default constructor 
+    public Reports(String id, String lastName, String firstName, String department, String crseNumber, String course, String name, String semester, String grade)
+    {
+      this.studentID = id;
+      this.studentLastName = lastName;
+      this.studentFirstName = firstName;
+      this.courseDepartment = department;
+      this.courseNumber = crseNumber;
+      this.courseName = course;
+      this.instructorName = name;
+      this.enrollmentSemester = semester;
+      this.enrollmentGrade = grade;
+      
+      
+    }
+
+    // Mutators  
+    public void setStudentID(String id)
+    {
+      studentID = id;
+    }
+    public void setStudentLastName(String lastName)
+    {
+      studentLastName = lastName;
+    }
+
+    public void setStudentFirstName(String firstName)
+    {
+      studentFirstName = firstName;
+    }
+
+    public void setCourseDepartment(String department)
+    {
+      courseDepartment = department;
+    }
+
+    public void setCourseNumber(String crseNumber)
+    {
+      courseNumber = crseNumber;
+    }
+
+    public void setCourseName(String course)
+    {
+      courseName = course;
+    }
+
+    public void setInstructorName(String name)
+    {
+      instructorName = name;
+    }
+
+    public void setEnrollmentSmester(String semester)
+    {
+      enrollmentSemester = semester;
+    }
+
+    public void setEnrollmentGrade(String grade)
+    {
+      enrollmentGrade = grade;
+    }
+    // accesors 
+    public String getStudentID()
+    {
+      return studentID;
+    }
+    public String getStudentLastName()
+    {
+      return studentLastName;
+    }
+
+    public  String getStudentFirstName()
+    {
+      return studentFirstName;
+    }
+
+    public String getCourseDepartment()
+    {
+      return courseDepartment;
+    }
+
+    public String getCourseNumber()
+    {
+      return courseNumber;
+    }
+
+    public String getCourseName()
+    {
+      return courseName;
+    }
+
+    public String getInstructorName()
+    {
+      return instructorName;
+    }
+
+    public String getEnrollmentSemester()
+    {
+      return enrollmentSemester;
+    }
+
+    public String getEnrollmentGrade()
+    {
+      return enrollmentGrade;
+    }
+    
+  }
+
+ 
